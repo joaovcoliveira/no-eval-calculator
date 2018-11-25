@@ -41,9 +41,11 @@ function doTheMath(op, array){
 function calculate(string){
 
 	// break the string into numbers and operators
-	var cArray = (string.match(/([0-9]+)|\+|-|\*|\//gmi));
+	var cArray = (string.match(/([0-9]+)|\+|-|\*|\//g));
 	let i = -1;
 
+	if(!cArray || cArray.length == 1) return string;
+	
 	// multiplications
 	while(i++ < cArray.length - 1){
 
@@ -85,7 +87,41 @@ function calculate(string){
 
 }
 
+function calculateFull(str){
+
+	// clean the string from spaces
+	str = str.replace(/ /g,'');
+
+	// declare the final result variable
+	var result = str;
+
+	// brake the strings there are between parentheses
+	var subCalculations = str.match(/\(([^()]+)\)/gmi); 
+	var subCalc;
+
+	if(!subCalculations)
+		return calculate(str);
+
+	for(let k = 0; k < subCalculations.length; k++){
+		subCalc = subCalculations[k].replace(/\(|\)/g, '');
+		console.log('Replacing (' + subCalc + ') by ' + calculate(subCalc));
+		result = result.replace('('+subCalc+')', calculate(subCalc));
+	}
+
+	// verify if the string still have parentheses and recursively resolves them
+	if(result.indexOf('(') >= 0)
+		return calculateFull(result);
+
+	console.log("String after subcalculations are done: " + result);
+	return calculate(result);
+	
+}
+
 if(!process.argv[2])
 	console.log('You need to pass the string as a parameter like: node calculate.js "10*3+4/4"');
-else
-	console.log("Resultado: " + calculate(process.argv[2]));
+else{
+	console.log();
+	console.log("Calculating " + process.argv[2]);
+	console.log("Result: " + calculateFull(process.argv[2]));
+	console.log();
+}
